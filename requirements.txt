@@ -1,0 +1,2 @@
+# Package versions will be pinned after the environment is inspected and the official repository is reviewed.
+# Keep this file as the single dependency specification for VS Code and Colab.

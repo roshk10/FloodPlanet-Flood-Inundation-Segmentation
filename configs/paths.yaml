@@ -1,0 +1,2 @@
+# Environment-specific paths will be configured here.
+# Do not hard-code user-specific paths inside src/ code.
