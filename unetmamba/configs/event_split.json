@@ -1,0 +1,30 @@
+{
+    "seed": 2026,
+    "dataset": "FloodPlanet",
+    "protocol": "fixed event-level split",
+    "train": [
+        "Colombia",
+        "Ghana",
+        "Nigeria",
+        "Paraguay",
+        "Somalia",
+        "Spain",
+        "US-Alabama",
+        "US-Arkansas",
+        "US-Carolina",
+        "US-Kansas",
+        "US-Nebraska",
+        "US-Oklahoma",
+        "US-Texas",
+        "Uzbekistan"
+    ],
+    "validation": [
+        "Bolivia",
+        "US-Dakota"
+    ],
+    "test": [
+        "Bangladesh",
+        "Cambodia",
+        "Nepal"
+    ]
+}
