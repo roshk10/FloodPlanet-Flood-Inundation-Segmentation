@@ -1,0 +1,37 @@
+{
+  "seed": 2026,
+  "patch_size": 300,
+  "stride": 150,
+  "batch_size": 8,
+  "epochs": 10,
+  "learning_rate": 0.0001,
+  "ignore_index": -1,
+  "train_events": [
+    "Colombia",
+    "Ghana",
+    "Nigeria",
+    "Paraguay",
+    "Somalia",
+    "Spain",
+    "US-Alabama",
+    "US-Arkansas",
+    "US-Carolina",
+    "US-Kansas",
+    "US-Nebraska",
+    "US-Oklahoma",
+    "US-Texas",
+    "Uzbekistan"
+  ],
+  "val_events": [
+    "Bolivia",
+    "US-Dakota"
+  ],
+  "test_events": [
+    "Bangladesh",
+    "Cambodia",
+    "Nepal"
+  ],
+  "selected_epoch": 6,
+  "best_validation_iou": 0.6000305614156324,
+  "test_used_for_model_selection": false
+}
