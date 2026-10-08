@@ -33,8 +33,9 @@ def get_compute_capability():
     return int(str(capability[0]) + str(capability[1]))
     
 def get_cuda_bare_metal_version(cuda_dir):
+    nvcc_bin = os.path.join(cuda_dir, "bin", "nvcc.exe" if os.name == "nt" else "nvcc")
     raw_output = subprocess.check_output(
-        [cuda_dir + "/bin/nvcc", "-V"], universal_newlines=True
+        [nvcc_bin, "-V"], universal_newlines=True
     )
     output = raw_output.split()
     release_idx = output.index("release") + 1
@@ -117,10 +118,12 @@ def get_ext():
             name=names.get(MODE, None),
             sources=sources.get(MODE, None),
             extra_compile_args={
-                "cxx": ["-O3", "-std=c++17"],
+                "cxx": ["/O2", "/std:c++20", "/Zc:preprocessor", "/D_USE_MATH_DEFINES"] if os.name == "nt" else ["-O3", "-std=c++20"],
                 "nvcc": [
                             "-O3",
-                            "-std=c++17",
+                            "-std=c++20",
+                            "-D_USE_MATH_DEFINES",
+                            "-Xcompiler", "/Zc:preprocessor",
                             "-U__CUDA_NO_HALF_OPERATORS__",
                             "-U__CUDA_NO_HALF_CONVERSIONS__",
                             "-U__CUDA_NO_BFLOAT16_OPERATORS__",

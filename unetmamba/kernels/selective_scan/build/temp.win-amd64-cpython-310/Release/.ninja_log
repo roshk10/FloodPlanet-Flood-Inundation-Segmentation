@@ -1,0 +1,5 @@
+# ninja log v7
+9	16065	8131423300982118	D:/Basemodel/FloodPlanet-Flood-Inundation-Segmentation/unetmamba/kernels/selective_scan/build/temp.win-amd64-cpython-310/Release/csrc/selective_scan/cus/selective_scan.obj	c981bf4a7a1e7843
+44	16770	8131425437629080	D:/Basemodel/FloodPlanet-Flood-Inundation-Segmentation/unetmamba/kernels/selective_scan/build/temp.win-amd64-cpython-310/Release/csrc/selective_scan/cus/selective_scan_core_fwd.obj	6864021d89cd9988
+33	17784	8131425437507540	D:/Basemodel/FloodPlanet-Flood-Inundation-Segmentation/unetmamba/kernels/selective_scan/build/temp.win-amd64-cpython-310/Release/csrc/selective_scan/cus/selective_scan.obj	253b181ba24cb191
+40	35380	8131425437584725	D:/Basemodel/FloodPlanet-Flood-Inundation-Segmentation/unetmamba/kernels/selective_scan/build/temp.win-amd64-cpython-310/Release/csrc/selective_scan/cus/selective_scan_core_bwd.obj	cf32355bc8c3be4b

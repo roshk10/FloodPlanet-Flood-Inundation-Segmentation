@@ -7,11 +7,12 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-DATASET_ROOT = (
-    PROJECT_ROOT
-    / "data"
-    / "FloodPlanet"
-)
+if Path("D:/Basemodel/Datasets").exists():
+    DATASET_ROOT = Path("D:/Basemodel/Datasets")
+elif Path("D:/Basemodel/FloodPlanet").exists():
+    DATASET_ROOT = Path("D:/Basemodel/FloodPlanet")
+else:
+    DATASET_ROOT = PROJECT_ROOT.parents[1] / "Datasets"
 
 EVENT_SPLIT_FILE = (
     PROJECT_ROOT
@@ -46,7 +47,7 @@ IN_CHANNELS = 4
 NUM_CLASSES = 2
 
 PATCH_SIZE = 512
-STRIDE = 256
+STRIDE = 512
 
 IGNORE_INDEX = -1
 
