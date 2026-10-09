@@ -110,3 +110,14 @@ Thumbs.db
 *.log
 *.dump
 *.bak
+# UNetMamba runtime artifact exclusions
+*.pt
+*.pth
+*.so
+*.dll
+*.pyd
+*.o
+*.obj
+*.zip
+**/__pycache__/
+**/build/

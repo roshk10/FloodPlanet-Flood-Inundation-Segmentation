@@ -1,0 +1,12 @@
+﻿{
+    "best_pt":  {
+                    "path":  "unetmamba/checkpoints/best.pt",
+                    "bytes":  177419969,
+                    "sha256":  "A8EEEE27694AF1ACEABCA6FB3CB38DF342860B2256F8CE69271D1670B71E43C8"
+                },
+    "last_pt":  {
+                    "path":  "unetmamba/checkpoints/last.pt",
+                    "bytes":  177420673,
+                    "sha256":  "963279225ED226D99830D70366532BC3F9FE4A2327B1246A8AB09D95C610CF8E"
+                }
+}

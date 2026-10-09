@@ -1,0 +1,17 @@
+{
+  "seed": 2026,
+  "checkpoint": "/kaggle/working/FloodPlanet-Flood-Inundation-Segmentation/unetmamba/results/checkpoints/best.pt",
+  "batch_size": 4,
+  "patch_size": 512,
+  "stride": 256,
+  "ignore_index": -1,
+  "amp_enabled": true,
+  "test_events": [
+    "Bangladesh",
+    "Cambodia",
+    "Nepal"
+  ],
+  "num_test_records": 44,
+  "best_checkpoint_epoch": 10,
+  "best_validation_mIoU": 0.6463754896473735
+}
