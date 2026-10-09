@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import math
 import copy
@@ -18,8 +19,11 @@ DropPath.__repr__ = lambda self: f"timm.DropPath({self.drop_prob})"
 # triton cross scan, 2x speed than pytorch implementation =========================
 try:
     from .csm_triton import CrossScanTriton, CrossMergeTriton, CrossScanTriton1b1
-except:
-    from csm_triton import CrossScanTriton, CrossMergeTriton, CrossScanTriton1b1
+except Exception:
+    try:
+        from csm_triton import CrossScanTriton, CrossMergeTriton, CrossScanTriton1b1
+    except Exception:
+        CrossScanTriton, CrossMergeTriton, CrossScanTriton1b1 = None, None, None
 
 # pytorch cross scan =============
 class CrossScan(torch.autograd.Function):
@@ -134,24 +138,27 @@ class CrossMerge_Ab_1direction(torch.autograd.Function):
 # import selective scan ==============================
 try:
     import selective_scan_cuda_oflex
-except Exception as e:
-    ...
-    # print(f"WARNING: can not import selective_scan_cuda_oflex.", flush=True)
-    # print(e, flush=True)
+except Exception:
+    selective_scan_cuda_oflex = None
 
 try:
     import selective_scan_cuda_core
-except Exception as e:
-    ...
-    # print(f"WARNING: can not import selective_scan_cuda_core.", flush=True)
-    # print(e, flush=True)
+except Exception:
+    selective_scan_cuda_core = None
 
 try:
     import selective_scan_cuda
-except Exception as e:
-    ...
-    # print(f"WARNING: can not import selective_scan_cuda.", flush=True)
-    # print(e, flush=True)
+except Exception:
+    selective_scan_cuda = None
+
+try:
+    _models_dir = os.path.dirname(os.path.abspath(__file__))
+    _src_dir = os.path.dirname(_models_dir)
+    if _src_dir not in sys.path:
+        sys.path.insert(0, _src_dir)
+    from mamba_ssm.ops.selective_scan_interface import selective_scan_ref
+except Exception:
+    selective_scan_ref = None
 
 
 def check_nan_inf(tag: str, x: torch.Tensor, enable=True):
@@ -369,7 +376,16 @@ def cross_selective_scan(
             backnrows = 1
 
     def selective_scan(u, delta, A, B, C, D=None, delta_bias=None, delta_softplus=True):
-        return SelectiveScan.apply(u, delta, A, B, C, D, delta_bias, delta_softplus, nrows, backnrows, ssoflex)
+        if selective_scan_cuda_core is not None:
+            return SelectiveScanCore.apply(u, delta, A, B, C, D, delta_bias, delta_softplus, nrows, backnrows, ssoflex)
+        elif selective_scan_cuda_oflex is not None:
+            return SelectiveScanOflex.apply(u, delta, A, B, C, D, delta_bias, delta_softplus, nrows, backnrows, ssoflex)
+        elif selective_scan_cuda is not None:
+            return SelectiveScanMamba.apply(u, delta, A, B, C, D, delta_bias, delta_softplus, nrows, backnrows, ssoflex)
+        elif selective_scan_ref is not None:
+            return selective_scan_ref(u, delta, A, B, C, D, delta_bias=delta_bias, delta_softplus=delta_softplus)
+        else:
+            raise RuntimeError("No selective_scan implementation found!")
     
     if (not dt_low_rank):
         x_dbl = F.conv1d(x.view(B, -1, L), x_proj_weight.view(-1, D, 1), bias=(x_proj_bias.view(-1) if x_proj_bias is not None else None), groups=K)

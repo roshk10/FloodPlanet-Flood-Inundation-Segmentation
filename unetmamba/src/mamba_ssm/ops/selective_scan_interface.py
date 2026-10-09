@@ -7,13 +7,20 @@ from torch.cuda.amp import custom_bwd, custom_fwd
 from einops import rearrange, repeat
 
 try:
+    # pyrefly: ignore [missing-import]
     from unetmamba.causal_conv1d.causal_conv1d.causal_conv1d_interface import causal_conv1d_fn
+    # pyrefly: ignore [missing-import]
     import causal_conv1d_cuda
 except ImportError:
     causal_conv1d_fn = None
     causal_conv1d_cuda = None
 
-import selective_scan_cuda
+try:
+    # pyrefly: ignore [missing-import]
+    import selective_scan_cuda
+except (ImportError, ModuleNotFoundError):
+    selective_scan_cuda = None
+
 
 
 class SelectiveScanFn(torch.autograd.Function):
@@ -123,27 +130,30 @@ def selective_scan_ref(u, delta, A, B, C, D=None, z=None, delta_bias=None, delta
         C = C.float()
     x = A.new_zeros((batch, dim, dstate))
     ys = []
-    deltaA = torch.exp(torch.einsum('bdl,dn->bdln', delta, A))
-    if not is_variable_B:
-        deltaB_u = torch.einsum('bdl,dn,bdl->bdln', delta, B, u)
-    else:
-        if B.dim() == 3:
-            deltaB_u = torch.einsum('bdl,bnl,bdl->bdln', delta, B, u)
-        else:
-            B = repeat(B, "B G N L -> B (G H) N L", H=dim // B.shape[1])
-            deltaB_u = torch.einsum('bdl,bdnl,bdl->bdln', delta, B, u)
+    if is_variable_B and B.dim() == 4:
+        B = repeat(B, "B G N L -> B (G H) N L", H=dim // B.shape[1])
     if is_variable_C and C.dim() == 4:
         C = repeat(C, "B G N L -> B (G H) N L", H=dim // C.shape[1])
     last_state = None
     for i in range(u.shape[2]):
-        x = deltaA[:, :, i] * x + deltaB_u[:, :, i]
+        delta_i = delta[:, :, i]
+        u_i = u[:, :, i]
+        deltaA_i = torch.exp(delta_i.unsqueeze(-1) * A)
+        if not is_variable_B:
+            deltaB_u_i = (delta_i * u_i).unsqueeze(-1) * B
+        elif B.dim() == 3:
+            deltaB_u_i = (delta_i * u_i).unsqueeze(-1) * B[:, :, i].unsqueeze(1)
+        else:
+            deltaB_u_i = (delta_i * u_i).unsqueeze(-1) * B[:, :, :, i]
+        x = deltaA_i * x + deltaB_u_i
         if not is_variable_C:
             y = torch.einsum('bdn,dn->bd', x, C)
         else:
             if C.dim() == 3:
                 y = torch.einsum('bdn,bn->bd', x, C[:, :, i])
             else:
-                y = torch.einsum('bdn,bdn->bd', x, C[:, :, :, i])
+                y = (x * C[:, :, :, i]).sum(dim=-1)
+
         if i == u.shape[2] - 1:
             last_state = x
         if y.is_complex():

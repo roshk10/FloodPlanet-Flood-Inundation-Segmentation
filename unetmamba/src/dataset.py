@@ -219,7 +219,6 @@ class FloodPlanetDataset(Dataset):
             )
 
             for crop_box in crop_boxes:
-
                 self.samples.append(
                     {
                         "event": record["event"],
@@ -229,6 +228,9 @@ class FloodPlanetDataset(Dataset):
                         "crop_box": crop_box,
                     }
                 )
+
+        self._image_cache = {}
+        self._label_cache = {}
 
     # ============================================================
     # PATCH GENERATION
@@ -472,6 +474,7 @@ class FloodPlanetDataset(Dataset):
         )
 
         padded[
+            :,
             :height,
             :width,
         ] = image
@@ -595,81 +598,13 @@ class FloodPlanetDataset(Dataset):
             ).copy()
 
         # --------------------------------------------------------
-        # Random rotation
+        # Fast Orthogonal Rotation (90, 180, 270 deg)
         # --------------------------------------------------------
 
         if random.random() < 0.5:
-
-            angle = random.uniform(
-                0.0,
-                360.0,
-            )
-
-            height, width = (
-                label.shape
-            )
-
-            center = (
-                width / 2.0,
-                height / 2.0,
-            )
-
-            rotation_matrix = (
-                cv2.getRotationMatrix2D(
-                    center,
-                    angle,
-                    1.0,
-                )
-            )
-
-            # ----------------------------------------------------
-            # Rotate image
-            # ----------------------------------------------------
-
-            rotated_image = []
-
-            for channel in image:
-
-                rotated_channel = (
-                    cv2.warpAffine(
-                        channel,
-                        rotation_matrix,
-                        (width, height),
-                        flags=cv2.INTER_LINEAR,
-                        borderMode=cv2.BORDER_CONSTANT,
-                        borderValue=(0.0,),
-                    )
-                )
-
-                rotated_image.append(
-                    rotated_channel
-                )
-
-            image = np.stack(
-                rotated_image,
-                axis=0,
-            )
-
-            # ----------------------------------------------------
-            # Rotate label
-            # ----------------------------------------------------
-
-            label_for_rotation = (
-                label.astype(np.int16)
-            )
-
-            label = cv2.warpAffine(
-                label_for_rotation,
-                rotation_matrix,
-                (width, height),
-                flags=cv2.INTER_NEAREST,
-                borderMode=cv2.BORDER_CONSTANT,
-                borderValue=(float(self.ignore_index),),
-            )
-
-            label = label.astype(
-                np.int64
-            )
+            k = random.choice([1, 2, 3])
+            image = np.rot90(image, k=k, axes=(1, 2)).copy()
+            label = np.rot90(label, k=k, axes=(0, 1)).copy()
 
         return (
             image,
@@ -699,17 +634,15 @@ class FloodPlanetDataset(Dataset):
             index
         ]
 
-        # --------------------------------------------------------
-        # Load
-        # --------------------------------------------------------
+        img_key = str(sample["image_path"])
+        if img_key not in self._image_cache:
+            self._image_cache[img_key] = self.load_image(sample["image_path"])
+        image = self._image_cache[img_key]
 
-        image = self.load_image(
-            sample["image_path"]
-        )
-
-        label = self.load_label(
-            sample["label_path"]
-        )
+        lbl_key = str(sample["label_path"])
+        if lbl_key not in self._label_cache:
+            self._label_cache[lbl_key] = self.load_label(sample["label_path"])
+        label = self._label_cache[lbl_key]
 
         # --------------------------------------------------------
         # Crop + pad

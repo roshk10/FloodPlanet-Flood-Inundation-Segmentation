@@ -9,9 +9,12 @@ import random
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-DATASET_ROOT = (
-    PROJECT_ROOT / "data" / "FloodPlanet"
-)
+if Path("D:/Basemodel/Datasets").exists():
+    DATASET_ROOT = Path("D:/Basemodel/Datasets")
+elif Path("D:/Basemodel/FloodPlanet").exists():
+    DATASET_ROOT = Path("D:/Basemodel/FloodPlanet")
+else:
+    DATASET_ROOT = PROJECT_ROOT.parents[1] / "Datasets"
 
 OUTPUT_FILE = (
     PROJECT_ROOT / "configs" / "event_split.json"

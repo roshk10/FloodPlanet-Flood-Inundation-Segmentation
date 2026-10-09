@@ -8,6 +8,10 @@
 #include <cuda_fp16.h>
 #include <c10/util/complex.h>  // For scalar_value_type
 
+#ifndef M_LOG2E
+#define M_LOG2E 1.442695040888963407359924681001892137f
+#endif
+
 #define MAX_DSTATE 256
 
 inline __device__ float2 operator+(const float2 & a, const float2 & b){
